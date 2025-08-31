@@ -59,11 +59,23 @@ chargeschart<-ggplot(train_data, aes(x=charges)) +
 #overview of all raw data
 grid.arrange(agechart, sexchart, bmichart, childrenchart, smokerchart, regionchart, chargeschart)
 
-ggplot(train_data, aes(x=age, y=charges, color = factor(smoker))) + geom_point() + geom_smooth()
-ggplot(train_data, aes(x=bmi, y=charges)) + geom_point() + geom_smooth()
-ggplot(train_data, aes(x=smoker, y=charges)) + geom_boxplot()
-ggplot(train_data, aes(x=factor(children), y=charges)) + geom_boxplot()
-ggplot(train_data, aes(x=factor(region),y=charges))+geom_boxplot()
+
+#viewing variables effects on charges
+
+#very obvious difference between smoker and non-smoker charges, with smoker charges having very high variance
+ggplot(train_data, aes(x=age, y=charges, color = factor(smoker))) + labs(y="Charges", x="Age", title="Charges vs Age by Smoker", color="Smoker") + geom_point() + geom_smooth()
+
+#Very little trend in charges with BMI for nonsmokers, upward trend in charges with BMI over 30 when smoker, very high variance
+ggplot(train_data, aes(x=bmi, y=charges, color = factor(smoker))) + labs(y="Charges", x="BMI", title="Charges vs BMI by Smoker", color="Smoker") + geom_point() + geom_smooth()
+
+#very little trend in charges with children
+ggplot(train_data, aes(x=factor(children), y=charges)) + labs(y="Charges", x="Children", title="Charges vs Number of Children by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
+
+#very little trend in charges with region
+ggplot(train_data, aes(x=factor(region), y=charges)) + labs(y="Charges", x="Region", title="Charges vs Region by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
+
+#very little trend in charges by sex
+ggplot(train_data, aes(x=factor(sex), y=charges)) + labs(y="Charges", x="Sex", title="Charges vs Sex by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
 
 numeric_vars <- train_data[sapply(train_data, is.numeric)]
 cor(numeric_vars)
@@ -98,48 +110,83 @@ predictions4 <- predict(model4, newdata=test_data, type="response")
 
 test_data <- data.frame(test_data, Model4Prediction=predictions4)
 
+#Model 5: Generalized linear model with all 6 input variables, with interaction between smoker and each other variable, using gamma error
+model5 <- glm(charges ~ smoker * (age + bmi + children + region + sex),
+                      data = train_data,
+                      family = Gamma(link = "log"))
+
+predictions5 <- predict(model5, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model5Prediction=predictions5)
+
+#Model 6: Generalized linear model with all age and BMI input variables, with interaction between smoker and each other variable, using gamma error
+model6 <- glm(charges ~ smoker * (age + bmi),
+              data = train_data,
+              family = Gamma(link = "log"))
+
+predictions6 <- predict(model6, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model6Prediction=predictions6)
+
+
 #Testing the efficacy of each model on test data
 #finding the SSE of each model
 RMSE1<-sqrt(sum((test_data$Model1Prediction-test_data$charges)^2)/nrow(test_data))
 RMSE2<-sqrt(sum((test_data$Model2Prediction-test_data$charges)^2)/nrow(test_data))
 RMSE3<-sqrt(sum((test_data$Model3Prediction-test_data$charges)^2)/nrow(test_data)) 
 RMSE4<-sqrt(sum((test_data$Model4Prediction-test_data$charges)^2)/nrow(test_data))
+RMSE5<-sqrt(sum((test_data$Model5Prediction-test_data$charges)^2)/nrow(test_data))
+RMSE6<-sqrt(sum((test_data$Model6Prediction-test_data$charges)^2)/nrow(test_data))
 
 RMSE1
 RMSE2
 RMSE3
 RMSE4
+RMSE5
+RMSE6
+
 
 model1Plot <- ggplot(data=test_data, aes(Model1Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
   geom_abline(intercept = c(-RMSE1,RMSE1), slope=1, color = "purple") +
-  labs(color = "Smoker", title = "Model 1", x = "prediction")
+  labs(color = "Smoker", title = "Model 1", x = "Prediction", y = "Charges")
 
 model2Plot <- ggplot(data=test_data, aes(Model2Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
   geom_abline(intercept = c(-RMSE2,RMSE2), slope=1, color = "purple") +
-  labs(color = "Smoker", title = "Model 2", x = "prediction")
+  labs(color = "Smoker", title = "Model 2", x = "Prediction", y = "Charges")
 
 model3Plot <- ggplot(data=test_data, aes(Model3Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  labs(color = "Smoker", title = "Model 3", x = "prediction") +
+  labs(color = "Smoker", title = "Model 3", x = "Prediction", y = "Charges") +
   geom_abline(intercept = c(-RMSE3,RMSE3), slope=1, color = "purple") +
   ylim(0, max(test_data$Model3Prediction, test_data$charges) + 2000) +
   xlim(0, max(test_data$Model3Prediction, test_data$charges) + 2000)
   
-
 model4Plot <- ggplot(data=test_data, aes(Model4Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  labs(color = "Smoker", title = "Model 4", x = "prediction") +
+  labs(color = "Smoker", title = "Model 4", x = "Prediction", y = "Charges") +
   geom_abline(intercept = c(-RMSE4,RMSE4), slope=1, color = "purple") +
   ylim(0, max(test_data$Model4Prediction, test_data$charges) + 2000) +
   xlim(0, max(test_data$Model4Prediction, test_data$charges) + 2000)
 
-grid.arrange(model1Plot, model2Plot, model3Plot, model4Plot)
+model5Plot <- ggplot(data=test_data, aes(Model5Prediction, charges, color = factor(smoker))) +
+  geom_point() +
+  geom_abline(intercept = 0, slope=1, color = "steelblue") +
+  geom_abline(intercept = c(-RMSE5,RMSE5), slope=1, color = "purple") +
+  labs(color = "Smoker", title = "Model 5", x = "Prediction", y = "Charges")
+
+model6Plot <- ggplot(data=test_data, aes(Model6Prediction, charges, color = factor(smoker))) +
+  geom_point() +
+  geom_abline(intercept = 0, slope=1, color = "steelblue") +
+  geom_abline(intercept = c(-RMSE6,RMSE6), slope=1, color = "purple") +
+  labs(color = "Smoker", title = "Model 6", x = "Prediction", y = "Charges")
+
+grid.arrange(model1Plot, model2Plot, model3Plot, model4Plot, model5Plot, model6Plot)
 
 
 
@@ -148,53 +195,44 @@ model1Res <- ggplot(data=test_data, aes(Model1Prediction, charges-Model1Predicti
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
   geom_abline(intercept = c(-RMSE1,RMSE1), slope=0, color = "purple") +
-  labs(color = "Smoker", y = "residual", x = "prediction", title = "Model 1 Residuals")
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 1 Residuals")
 
 model2Res <- ggplot(data=test_data, aes(Model2Prediction, charges-Model2Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
   geom_abline(intercept = c(-RMSE2,RMSE2), slope=0, color = "purple") +
-  labs(color = "Smoker", y = "residual", x = "prediction", title = "Model 2 Residuals")
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 2 Residuals")
 
 model3Res <- ggplot(data=test_data, aes(Model3Prediction, charges-Model3Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
   geom_abline(intercept = c(-RMSE3,RMSE3), slope=0, color = "purple") +
-  labs(color = "Smoker", y = "residual", x = "prediction", title = "Model 3 Residuals")
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 3 Residuals")
 
 model4Res <- ggplot(data=test_data, aes(Model4Prediction, charges-Model4Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
   geom_abline(intercept = c(-RMSE4,RMSE4), slope=0, color = "purple") +
-  labs(color = "Smoker", y = "residual", x = "prediction", title = "Model 4 Residuals")
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 4 Residuals")
 
-grid.arrange(model1Res, model2Res, model3Res, model4Res)
-
-
-
-model_non <- glm(charges ~ age + bmi + children + region + sex,
-                 data = subset(train_data, smoker == "no"),
-                 family = Gamma(link = "log"))
-
-model_smoker <- glm(charges ~ age + bmi + children + region + sex,
-                    data = subset(train_data, smoker == "yes"),
-                    family = Gamma(link = "log"))
-
-model_interact <- glm(charges ~ smoker * (age + bmi + children + region + sex),
-                      data = train_data,
-                      family = Gamma(link = "log"))
-test_data <- data.frame(test_data, Model5Prediction=predict(model_interact, newdata = test_data, type="response"))
-test_data
-
-ggplot(data=test_data, aes(Model5Prediction, charges, color = factor(smoker))) +
+model5Res <- ggplot(data=test_data, aes(Model5Prediction, charges-Model5Prediction, color = factor(smoker))) +
   geom_point() +
-  geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE5,RMSE5), slope=1, color = "purple") +
-  labs(color = "Smoker", title = "Model 1", x = "prediction")
+  geom_abline(intercept = 0, slope=0, color = "steelblue") +
+  geom_abline(intercept = c(-RMSE5,RMSE5), slope=0, color = "purple") +
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 5 Residuals")
 
-RMSE5<-sqrt(sum((test_data$Model5Prediction-test_data$charges)^2)/nrow(test_data))
-RMSE5
+model6Res <- ggplot(data=test_data, aes(Model6Prediction, charges-Model6Prediction, color = factor(smoker))) +
+  geom_point() +
+  geom_abline(intercept = 0, slope=0, color = "steelblue") +
+  geom_abline(intercept = c(-RMSE6,RMSE6), slope=0, color = "purple") +
+  labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 6 Residuals")
 
-#also do splitting of model, not just adding smoker interactions
 
-#then make RMD, and comment, and put on github
+grid.arrange(model1Res, model2Res, model3Res, model4Res, model5Res, model6Res)
+
+
+
+
+
+#todo: make rmd file nice
+
