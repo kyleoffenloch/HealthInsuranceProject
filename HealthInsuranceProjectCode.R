@@ -87,7 +87,6 @@ cor(numeric_vars)
 
 #Model 1: linear regression model with all 6 input variables. gaussian error distributions, includes unrealistic negative charges as a side effect of gaussian
 model1<-lm(charges ~ age + sex + bmi + children + smoker + region, data = train_data)
-summary(model1)
 
 predictions1 <- predict(model1,newdata=test_data)
 
@@ -123,7 +122,7 @@ predictions5 <- predict(model5, newdata=test_data, type="response")
 
 test_data <- data.frame(test_data, Model5Prediction=predictions5)
 
-#Model 6: Generalized linear model with all age and BMI input variables, with interaction between smoker and each other variable, using gamma error
+#Model 6: Generalized linear model with age and BMI input variables, with interaction between smoker and each other variable, using gamma error
 model6 <- glm(charges ~ smoker * (age + bmi),
               data = train_data,
               family = Gamma(link = "log"))

@@ -1,7 +1,11 @@
 Health Insurance Cost Modeling
 ================
-Kyle Offenloch
-2025-08-30
+
+<center>
+
+<subtitle>Kyle Offenloch</subtitle> <br> <subtitle>August 30,
+2025</subtitle>
+</center>
 
 ## Data used in this Project:
 
@@ -61,47 +65,156 @@ No trend in charges with no. of children, region or sex.
 
 # Building Models
 
-We will build six different models, all generalized linear models:
+We will build six different models, training them on 2/3 of the data,
+then testing them on the other 1/3.
+
+These will all be generalized linear models:
 
 Model 1: Normal linear regression model with all six variables. This
 model will include unrealistic negative cost predictions as a side
 effect of assuming gaussian error terms and fully linear relationships
-between variables
+between variables.
 
 ``` r
 model1<-lm(charges ~ age + sex + bmi + children + smoker + region, data = train_data)
-summary(model1)
-```
 
-    ## 
-    ## Call:
-    ## lm(formula = charges ~ age + sex + bmi + children + smoker + 
-    ##     region, data = train_data)
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -11279  -3044  -1003   1708  30064 
-    ## 
-    ## Coefficients:
-    ##                  Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)     -12440.30    1262.15  -9.856  < 2e-16 ***
-    ## age                238.85      15.20  15.715  < 2e-16 ***
-    ## sexmale           -220.97     422.62  -0.523   0.6012    
-    ## bmi                371.90      35.83  10.381  < 2e-16 ***
-    ## children           693.87     171.06   4.056 5.43e-05 ***
-    ## smokeryes        24123.82     510.83  47.225  < 2e-16 ***
-    ## regionnorthwest   -607.90     600.20  -1.013   0.3114    
-    ## regionsoutheast   -972.78     605.33  -1.607   0.1084    
-    ## regionsouthwest  -1167.14     602.59  -1.937   0.0531 .  
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 6241 on 883 degrees of freedom
-    ## Multiple R-squared:  0.7459, Adjusted R-squared:  0.7436 
-    ## F-statistic:   324 on 8 and 883 DF,  p-value: < 2.2e-16
-
-``` r
 predictions1 <- predict(model1,newdata=test_data)
 
 test_data <- data.frame(test_data,Model1Prediction=predictions1)
 ```
+
+Model 2: Normal linear regression model with only age, bmi, and smoker
+status. This model will include unrealistic negative cost predictions as
+a side effect of assuming gaussian error terms and fully linear
+relationships between variables.
+
+``` r
+model2<-lm(charges ~ age + bmi + smoker, data = train_data)
+
+predictions2 <- predict(model2,newdata=test_data)
+
+test_data <- data.frame(test_data,Model2Prediction=predictions2)
+```
+
+Model 3: Gamma regression with all six variables. Using gamma regression
+makes more sense for health costs due to right skewness and strict
+positivity.
+
+``` r
+model3 <- glm(charges ~ age + sex + bmi + children + smoker + region, data=train_data, family=Gamma(link="log"))
+
+predictions3 <- predict(model3, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model3Prediction=predictions3)
+```
+
+Model 4: Gamma regression with only age, bmi, smoker status.
+
+``` r
+model4 <- glm(charges ~ age + bmi + smoker, data=train_data, family=Gamma(link="log"))
+
+predictions4 <- predict(model4, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model4Prediction=predictions4)
+```
+
+Model 5: Gamma regression with all 6 variables, including interactions
+with smoker status, allowing smoking to have different effects on costs
+when combined with other attributes.
+
+``` r
+model5 <- glm(charges ~ smoker * (age + bmi + children + region + sex),
+                      data = train_data,
+                      family = Gamma(link = "log"))
+
+predictions5 <- predict(model5, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model5Prediction=predictions5)
+```
+
+Model 6: Gamma regression with age, BMI, and smoking status. With
+interactions between smoking status and other variables.
+
+``` r
+model6 <- glm(charges ~ smoker * (age + bmi),
+              data = train_data,
+              family = Gamma(link = "log"))
+
+predictions6 <- predict(model6, newdata=test_data, type="response")
+
+test_data <- data.frame(test_data, Model6Prediction=predictions6)
+```
+
+## Testing Models
+
+Now we can view how well each model predicts the medical costs of the
+untrained data.
+
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+    ## [1] "RMSE1: 5744.41"
+
+    ## [1] "MAE1: 3980"
+
+    ## [1] "R^2_1: 0.756"
+
+    ## [1] "RMSE2: 5694.08"
+
+    ## [1] "MAE2: 3968.69"
+
+    ## [1] "R^2_2: 0.761"
+
+It looks like the linear regression models with gaussian error did an
+okay job of predicting costs for nonsmokers albeit the spread is very
+inconsistent. For smokers it overshot many by ~7000 and undershot many
+by ~7000. This could be due to the BMI having more of an effect on
+smokers after age 30 and these models having no interaction, only taking
+into account the age effect, smoker effect, and BMI effect independent
+of their effects on each other.
+
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+    ## [1] "RMSE3: 7155.99"
+
+    ## [1] "MAE3: 4136.28"
+
+    ## [1] "R^2_3: 0.622"
+
+    ## [1] "RMSE4: 6476.14"
+
+    ## [1] "MAE4: 3875.69"
+
+    ## [1] "R^2_4: 0.69"
+
+The gamma regression models did a much better job of predicting costs
+for non-smokers, due to assuming charges follow a skewed gamma
+distribution, which is much more realistic. Non-smoker predictions are
+much closer to the y=x line than in the gaussian model. For smokers the
+model again overshot many and undershot many, overshooting some by as
+much as \$30,000. This shows that this model doesn’t adjust for BMI’s
+specific effect on Smokers over 30.
+
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+    ## [1] "RMSE5: 4761.68"
+
+    ## [1] "MAE5: 2922.21"
+
+    ## [1] "R^2_5: 0.833"
+
+    ## [1] "RMSE6: 4732.93"
+
+    ## [1] "MAE6: 2917.82"
+
+    ## [1] "R^2_6: 0.835"
+
+The gamma regression models with smoker status’ interaction with other
+terms seems to provide the best estimates of cost for smokers and
+nonsmokers. It has less of a gap in the smoker costs than the other
+models showing it takes into account smoking’s compounded effects with
+BMI and age.
+
+Here are The residual plots to see how each model overshoots/undershoots
+the real costs
+
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
