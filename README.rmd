@@ -1,0 +1,133 @@
+---
+title: "Health Insurance Cost Modeling"
+author: "Kyle Offenloch"
+output:
+  github_document: default
+  pdf_document: default
+  html_document: default
+date: "2025-08-30"
+---
+
+## Data used in this Project:
+
+Health Insurance dataset from kaggle.com
+
+<https://www.kaggle.com/datasets/willianoliveiragibin/healthcare-insurance>
+
+Includes information on attributes of 1338 insured individuals, including their age, sex, BMI, number of children, smoking habits, and region. It also includes their medical costs incurred.
+
+## Goal of this project:
+
+-   Analyze data to infer effects of other variables on medical costs.
+-   Create generalized linear models using different assumptions to predict costs.
+-   Test and compare models.
+
+# General Analysis
+
+First, we break down the data to look at the entire picture.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+library("gridExtra")
+
+
+#importing data
+data <- read.csv("insurance.csv")
+
+
+#making charts to view raw training data
+agechart<-ggplot(data, aes(x = age)) +
+  geom_histogram(binwidth = 1,fill = "steelblue", color = "white") +
+  ggtitle("age Distribution") +
+  theme_minimal()
+sexchart<-ggplot(data, aes(x = "", fill=sex)) +
+  geom_bar(width=1, color="blue") +
+  coord_polar(theta = "y") +
+  ggtitle("sex Distribution") +
+  theme_void()
+bmichart<-ggplot(data, aes(x=bmi)) +
+  geom_histogram(binwidth=1, fill="steelblue", color="white") +
+  ggtitle("bmi Distribution") +
+  theme_minimal()
+childrenchart<-ggplot(data, aes(x=children)) +
+  geom_histogram(binwidth=1, fill="steelblue", color="white") +
+  ggtitle("child Distribution") +
+  theme_minimal()
+smokerchart<-ggplot(data, aes(x = "", fill=smoker)) +
+  geom_bar(width=1, color="blue") +
+  coord_polar(theta = "y") +
+  ggtitle("smoker Distribution") +
+  theme_void()
+regionchart<-ggplot(data, aes(x = "", fill=region)) +
+  geom_bar(width=1, color="blue") +
+  coord_polar(theta = "y") +
+  ggtitle("region Distribution") +
+  theme_void()
+chargeschart<-ggplot(data, aes(x=charges)) +
+  geom_histogram(bins = 50, fill="steelblue", color="white") +
+  ggtitle("expenses Distribution") +
+  theme_minimal()
+
+
+#overview of all raw data
+grid.arrange(agechart, sexchart, bmichart, childrenchart, smokerchart, regionchart, chargeschart)
+```
+
+These are the histograms, bar charts, and pie charts of each of the 7 attributes in this data set, helping us see the general frequency and distributions of the variables.
+
+Now we will plot medical charges against different attributes to deduce the relationship, also including smoking status in each chart.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+ggplot(data, aes(x=factor(smoker), y=charges))  + labs(y="Charges", x="Smoking Status", title="Charges by Smoking Status") + geom_boxplot(fill="steelblue")
+```
+
+Big difference in Charges by smoking status.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+ ggplot(data, aes(x=age, y=charges, color = factor(smoker))) + labs(y="Charges", x="Age", title="Charges vs Age by Smoker", color="Smoker") + geom_point() + geom_smooth()
+```
+
+Positive trend in charges with age, sizable difference between smoker and non-smoker charges, with smoker charges having very high variance.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+ggplot(data, aes(x=bmi, y=charges, color = factor(smoker))) + labs(y="Charges", x="BMI", title="Charges vs BMI by Smoker", color="Smoker") + geom_point() + geom_smooth()
+```
+
+Very little trend in charges with BMI for nonsmokers, large jump in charges for smokers with BMI over 30.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+ggplot(data, aes(x=factor(children), y=charges)) + labs(y="Charges", x="Children", title="Charges vs Number of Children by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
+ggplot(data, aes(x=factor(region), y=charges)) + labs(y="Charges", x="Region", title="Charges vs Region by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
+ggplot(data, aes(x=factor(sex), y=charges)) + labs(y="Charges", x="Sex", title="Charges vs Sex by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
+```
+
+No trend in charges with no. of children, region or sex. 
+
+## Conclusion of attributes effects on charges
+  * Smoking has the largest effect on charges, showing up in every other chart when plotted with other attributes
+  * Age has a slight effect on charges the higher it is
+  * BMI has a quite large effect on charges in smokers, but not much for nonsmokers
+
+# Building Models
+
+We will build six different models, all generalized linear models:
+
+Model 1: Normal linear regression model with all six variables. This model will include unrealistic negative cost predictions as a side effect of assuming gaussian error terms and fully linear relationships between variables
+
+```{r, echo=FALSE}
+set.seed(123)
+split.ratio <- 2/3
+
+train_indices<-sample(seq_len(nrow(data)), size = floor(split.ratio * nrow(data)))
+
+train_data<-data[train_indices,]
+test_data<-data[-train_indices,]
+```
+```{r, echo=TRUE}
+model1<-lm(charges ~ age + sex + bmi + children + smoker + region, data = train_data)
+
+predictions1 <- predict(model1,newdata=test_data)
+
+test_data <- data.frame(test_data,Model1Prediction=predictions1)

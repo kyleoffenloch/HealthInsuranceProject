@@ -4,7 +4,7 @@
 #Goal: use past policy data of 1338 policies to price health insurance premiums for future policies given different customer data
 
 #setting seed and deciding 66.67% of data for training
-set.seed(7997169)
+set.seed(123)
 split.ratio <- 2/3
 
 library("ggplot2")
@@ -62,6 +62,9 @@ grid.arrange(agechart, sexchart, bmichart, childrenchart, smokerchart, regioncha
 
 #viewing variables effects on charges
 
+#very obvious higher charges for smokers
+ggplot(train_data, aes(x=factor(smoker), y=charges))  + labs(y="Charges", x="Smoking Status", title="Charges by Smoking Status") + geom_boxplot(fill="steelblue")
+
 #very obvious difference between smoker and non-smoker charges, with smoker charges having very high variance
 ggplot(train_data, aes(x=age, y=charges, color = factor(smoker))) + labs(y="Charges", x="Age", title="Charges vs Age by Smoker", color="Smoker") + geom_point() + geom_smooth()
 
@@ -77,22 +80,23 @@ ggplot(train_data, aes(x=factor(region), y=charges)) + labs(y="Charges", x="Regi
 #very little trend in charges by sex
 ggplot(train_data, aes(x=factor(sex), y=charges)) + labs(y="Charges", x="Sex", title="Charges vs Sex by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
 
+#viewing correlation between numeric variables
 numeric_vars <- train_data[sapply(train_data, is.numeric)]
 cor(numeric_vars)
 
 
-#Model 1: linear regression model with all 6 input variables. gaussian error distributions
-model1<-glm(charges ~ age + sex + bmi + children + smoker + region, data = train_data, family=gaussian(link="log"))
+#Model 1: linear regression model with all 6 input variables. gaussian error distributions, includes unrealistic negative charges as a side effect of gaussian
+model1<-lm(charges ~ age + sex + bmi + children + smoker + region, data = train_data)
 summary(model1)
 
-predictions1 <- predict(model1,newdata=test_data, type="response")
+predictions1 <- predict(model1,newdata=test_data)
 
 test_data <- data.frame(test_data,Model1Prediction=predictions1)
 
-#Model 2: linear regression model with only age, bmi, smoker. gaussian error distributions
-model2<-glm(charges ~ age + bmi + smoker, data = train_data, family=gaussian(link="log"))
+#Model 2: linear regression model with only age, bmi, smoker. gaussian error distributions, includes unrealistic negative charges as a side effect of gaussian
+model2<-lm(charges ~ age + bmi + smoker, data = train_data)
 
-predictions2 <- predict(model2,newdata=test_data,type="response")
+predictions2 <- predict(model2,newdata=test_data)
 
 test_data <- data.frame(test_data,Model2Prediction=predictions2)
 
@@ -128,9 +132,9 @@ predictions6 <- predict(model6, newdata=test_data, type="response")
 
 test_data <- data.frame(test_data, Model6Prediction=predictions6)
 
-
 #Testing the efficacy of each model on test data
-#finding the SSE of each model
+#finding the RMSE of each model
+
 RMSE1<-sqrt(sum((test_data$Model1Prediction-test_data$charges)^2)/nrow(test_data))
 RMSE2<-sqrt(sum((test_data$Model2Prediction-test_data$charges)^2)/nrow(test_data))
 RMSE3<-sqrt(sum((test_data$Model3Prediction-test_data$charges)^2)/nrow(test_data)) 
@@ -138,12 +142,44 @@ RMSE4<-sqrt(sum((test_data$Model4Prediction-test_data$charges)^2)/nrow(test_data
 RMSE5<-sqrt(sum((test_data$Model5Prediction-test_data$charges)^2)/nrow(test_data))
 RMSE6<-sqrt(sum((test_data$Model6Prediction-test_data$charges)^2)/nrow(test_data))
 
+
+r_squared_1 <- 1-sum((test_data$Model1Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+r_squared_2 <- 1-sum((test_data$Model2Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+r_squared_3 <- 1-sum((test_data$Model3Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+r_squared_4 <- 1-sum((test_data$Model4Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+r_squared_5 <- 1-sum((test_data$Model5Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+r_squared_6 <- 1-sum((test_data$Model6Prediction-test_data$charges)^2)/sum((test_data$charges-mean(test_data$charges))^2)
+
+MAE1 <- mean(abs(test_data$Model1Prediction-test_data$charges))
+MAE2 <- mean(abs(test_data$Model2Prediction-test_data$charges))
+MAE3 <- mean(abs(test_data$Model3Prediction-test_data$charges))
+MAE4 <- mean(abs(test_data$Model4Prediction-test_data$charges))
+MAE5 <- mean(abs(test_data$Model5Prediction-test_data$charges))
+MAE6 <- mean(abs(test_data$Model6Prediction-test_data$charges))
+
+
 RMSE1
 RMSE2
 RMSE3
 RMSE4
 RMSE5
 RMSE6
+
+r_squared_1
+r_squared_2
+r_squared_3
+r_squared_4
+r_squared_5
+r_squared_6
+
+MAE1
+MAE2
+MAE3
+MAE4
+MAE5
+MAE6
+
+
 
 
 model1Plot <- ggplot(data=test_data, aes(Model1Prediction, charges, color = factor(smoker))) +
