@@ -106,7 +106,7 @@ ggplot(data, aes(x=factor(region), y=charges)) + labs(y="Charges", x="Region", t
 ggplot(data, aes(x=factor(sex), y=charges)) + labs(y="Charges", x="Sex", title="Charges vs Sex by Smoker") + geom_boxplot(fill="steelblue") + facet_grid(~smoker)
 ```
 
-No trend in charges with no. of children, region or sex. 
+Very little trend in charges with no. of children, region or sex. 
 
 ## Conclusion of attributes effects on charges
   * Smoking has the largest effect on charges, showing up in every other chart when plotted with other attributes
@@ -337,3 +337,8 @@ model6Res <- ggplot(data=test_data, aes(Model6Prediction, charges-Model6Predicti
 grid.arrange(model1Res, model2Res, model3Res, model4Res, model5Res, model6Res)
 
 ```
+
+# Conclusion
+
+The model with the lowest RMSE, MAE, and highest R^2 (1-RSS/TSS) are the models that use gamma regression and account for interaction between smoker status and the other variables.
+This suggests that they are the best models to use to predict the medical costs of new people added into the system.

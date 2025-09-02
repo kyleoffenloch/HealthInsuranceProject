@@ -218,3 +218,11 @@ Here are The residual plots to see how each model overshoots/undershoots
 the real costs
 
 ![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+# Conclusion
+
+The model with the lowest RMSE, MAE, and highest R^2 (1-RSS/TSS) are the
+models that use gamma regression and account for interaction between
+smoker status and the other variables. This suggests that they are the
+best models to use to predict the medical costs of new people added into
+the system.
