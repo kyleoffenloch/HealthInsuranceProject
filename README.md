@@ -53,7 +53,7 @@ charges for smokers with BMI over 30.
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-5-3.png)<!-- -->
 
-No trend in charges with no. of children, region or sex.
+Very little trend in charges with no. of children, region or sex.
 
 ## Conclusion of attributes effects on charges
 
@@ -148,7 +148,9 @@ test_data <- data.frame(test_data, Model6Prediction=predictions6)
 ## Testing Models
 
 Now we can view how well each model predicts the medical costs of the
-untrained data.
+people it’s not trained on. The line on the graphs is the y=x line
+(where all predictions are equal to the charges). We wish for the model
+plots to be as close to it as possible.
 
 ![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 

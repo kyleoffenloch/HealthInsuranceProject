@@ -194,7 +194,7 @@ test_data <- data.frame(test_data, Model6Prediction=predictions6)
 
 ## Testing Models
 
-Now we can view how well each model predicts the medical costs of the untrained data.
+Now we can view how well each model predicts the medical costs of the people it's not trained on. The line on the graphs is the y=x line (where all predictions are equal to the charges). We wish for the model plots to be as close to it as possible.
 
 ```{r, echo=FALSE}
 RMSE1<-sqrt(sum((test_data$Model1Prediction-test_data$charges)^2)/nrow(test_data)) |> round(2)
@@ -300,37 +300,31 @@ Here are The residual plots to see how each model overshoots/undershoots the rea
 model1Res <- ggplot(data=test_data, aes(Model1Prediction, charges-Model1Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE1,RMSE1), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 1 Residuals")
 
 model2Res <- ggplot(data=test_data, aes(Model2Prediction, charges-Model2Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE2,RMSE2), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 2 Residuals")
 
 model3Res <- ggplot(data=test_data, aes(Model3Prediction, charges-Model3Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE3,RMSE3), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 3 Residuals")
 
 model4Res <- ggplot(data=test_data, aes(Model4Prediction, charges-Model4Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE4,RMSE4), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 4 Residuals")
 
 model5Res <- ggplot(data=test_data, aes(Model5Prediction, charges-Model5Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE5,RMSE5), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 5 Residuals")
 
 model6Res <- ggplot(data=test_data, aes(Model6Prediction, charges-Model6Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE6,RMSE6), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 6 Residuals")
 
 

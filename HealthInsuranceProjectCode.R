@@ -184,20 +184,20 @@ MAE6
 model1Plot <- ggplot(data=test_data, aes(Model1Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE1,RMSE1), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE1,MAE1), slope=1, color = "purple") +
   labs(color = "Smoker", title = "Model 1", x = "Prediction", y = "Charges")
 
 model2Plot <- ggplot(data=test_data, aes(Model2Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE2,RMSE2), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE2,MAE2), slope=1, color = "purple") +
   labs(color = "Smoker", title = "Model 2", x = "Prediction", y = "Charges")
 
 model3Plot <- ggplot(data=test_data, aes(Model3Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
   labs(color = "Smoker", title = "Model 3", x = "Prediction", y = "Charges") +
-  geom_abline(intercept = c(-RMSE3,RMSE3), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE3,MAE3), slope=1, color = "purple") +
   ylim(0, max(test_data$Model3Prediction, test_data$charges) + 2000) +
   xlim(0, max(test_data$Model3Prediction, test_data$charges) + 2000)
   
@@ -205,20 +205,20 @@ model4Plot <- ggplot(data=test_data, aes(Model4Prediction, charges, color = fact
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
   labs(color = "Smoker", title = "Model 4", x = "Prediction", y = "Charges") +
-  geom_abline(intercept = c(-RMSE4,RMSE4), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE4,MAE4), slope=1, color = "purple") +
   ylim(0, max(test_data$Model4Prediction, test_data$charges) + 2000) +
   xlim(0, max(test_data$Model4Prediction, test_data$charges) + 2000)
 
 model5Plot <- ggplot(data=test_data, aes(Model5Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE5,RMSE5), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE5,MAE5), slope=1, color = "purple") +
   labs(color = "Smoker", title = "Model 5", x = "Prediction", y = "Charges")
 
 model6Plot <- ggplot(data=test_data, aes(Model6Prediction, charges, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=1, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE6,RMSE6), slope=1, color = "purple") +
+  geom_abline(intercept = c(-MAE6,MAE6), slope=1, color = "purple") +
   labs(color = "Smoker", title = "Model 6", x = "Prediction", y = "Charges")
 
 grid.arrange(model1Plot, model2Plot, model3Plot, model4Plot, model5Plot, model6Plot)
@@ -229,37 +229,37 @@ grid.arrange(model1Plot, model2Plot, model3Plot, model4Plot, model5Plot, model6P
 model1Res <- ggplot(data=test_data, aes(Model1Prediction, charges-Model1Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE1,RMSE1), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE1,MAE1), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 1 Residuals")
 
 model2Res <- ggplot(data=test_data, aes(Model2Prediction, charges-Model2Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE2,RMSE2), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE2,MAE2), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 2 Residuals")
 
 model3Res <- ggplot(data=test_data, aes(Model3Prediction, charges-Model3Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE3,RMSE3), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE3,MAE3), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 3 Residuals")
 
 model4Res <- ggplot(data=test_data, aes(Model4Prediction, charges-Model4Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE4,RMSE4), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE4,MAE4), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 4 Residuals")
 
 model5Res <- ggplot(data=test_data, aes(Model5Prediction, charges-Model5Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE5,RMSE5), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE5,MAE5), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 5 Residuals")
 
 model6Res <- ggplot(data=test_data, aes(Model6Prediction, charges-Model6Prediction, color = factor(smoker))) +
   geom_point() +
   geom_abline(intercept = 0, slope=0, color = "steelblue") +
-  geom_abline(intercept = c(-RMSE6,RMSE6), slope=0, color = "purple") +
+  geom_abline(intercept = c(-MAE6,MAE6), slope=0, color = "purple") +
   labs(color = "Smoker", y = "Residual", x = "Prediction", title = "Model 6 Residuals")
 
 
@@ -267,7 +267,4 @@ grid.arrange(model1Res, model2Res, model3Res, model4Res, model5Res, model6Res)
 
 
 
-
-
-#todo: make rmd file nice
 
